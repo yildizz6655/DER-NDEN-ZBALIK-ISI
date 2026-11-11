@@ -5,83 +5,69 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>DERİNDENİZBALIKÇISI</title>
-<link rel="stylesheet" href="style.css">
+
+<style>
+*{box-sizing:border-box}
+body{margin:0;overflow:hidden;background:#061d35;color:white;font-family:Arial}
+#menu{
+ position:fixed;inset:0;z-index:10;
+ display:flex;flex-direction:column;
+ align-items:center;justify-content:center;
+ background:linear-gradient(180deg,#063e68,#061b36);
+}
+h1{font-size:32px;text-align:center;color:#54d9ff}
+.menu-btn{
+ width:230px;padding:15px;margin:7px;
+ border:1px solid #55d9ff;border-radius:13px;
+ background:#0877a9;color:white;font-size:17px;
+}
+#hud{display:none;position:fixed;inset:0;pointer-events:none}
+#steering{
+ position:absolute;bottom:25px;left:22px;
+ width:125px;height:125px;border:12px solid white;
+ border-radius:50%;pointer-events:auto;
+}
+#steering:after{
+ content:"";position:absolute;left:10%;right:10%;
+ top:50%;height:9px;background:white;
+}
+#throttle{
+ position:absolute;bottom:25px;right:25px;
+ width:65px;height:145px;border-radius:35px;
+ background:#163e5d;border:3px solid white;
+ pointer-events:auto;
+}
+#lever{
+ position:absolute;left:5px;top:60px;
+ width:49px;height:25px;border-radius:15px;
+ background:#45d9ff;
+}
+#camera{
+ position:absolute;right:20px;top:20px;
+ padding:13px;border-radius:50%;
+ background:#0877a9;color:white;
+ border:2px solid white;pointer-events:auto;
+}
+#info{position:absolute;top:20px;left:20px}
+</style>
 </head>
 <body>
 
-<div id="game"></div>
-
 <div id="menu">
-    <h1>🎣 DERİNDENİZBALIKÇISI</h1>
-    <p>Denizin derinliklerinde macera başlıyor!</p>
-
-    <button onclick="startGame()">▶ OYUNA BAŞLA</button>
-    <button onclick="openPanel('garage')">🚤 TEKNE GARAJI</button>
-    <button onclick="openPanel('collection')">🐟 BALIK KOLEKSİYONU</button>
-    <button onclick="openPanel('settings')">⚙ AYARLAR</button>
-
-    <div>💰 <span id="menu-money">1.000</span> TL</div>
-</div>
-
-<div id="garage" class="screen">
-    <h1>🚤 TEKNE GARAJI</h1>
-    <p>Başlangıç teknen seni bekliyor!</p>
-    <button onclick="backMenu()">GERİ</button>
-</div>
-
-<div id="collection" class="screen">
-    <h1>🐟 BALIK KOLEKSİYONU</h1>
-    <p>Henüz balık yakalamadın.</p>
-    <button onclick="backMenu()">GERİ</button>
-</div>
-
-<div id="settings" class="screen">
-    <h1>⚙ AYARLAR</h1>
-    <p>Oyun sürümü: 1.0</p>
-    <button onclick="backMenu()">GERİ</button>
+<h1>DERİNDENİZBALIKÇISI</h1>
+<p>3D BALIKÇILIK MACERASI</p>
+<button class="menu-btn" onclick="startGame()">OYUNA BAŞLA</button>
+<button class="menu-btn">TEKNE GARAJI</button>
+<button class="menu-btn">BALIK KOLEKSİYONU</button>
+<button class="menu-btn">AYARLAR</button>
 </div>
 
 <div id="hud">
-    <div class="top-info">
-        <b>🎣 DERİNDENİZBALIKÇISI</b>
-        <span>💰 1.000 TL</span>
-        <span id="speed">0 KM/H</span>
-    </div>
-
-    <button id="camera">📷 KAMERA</button>
-
-    <div id="controls">
-        <div class="steering-area">
-            <div id="steering-wheel">
-                <div class="wheel-center">✥</div>
-            </div>
-            <small>DİREKSİYON</small>
-        </div>
-
-        <div class="throttle-area">
-            <div id="throttle">
-                <div class="lever-label top">İLERİ</div>
-                <div class="lever-label bottom">GERİ</div>
-                <div id="throttle-handle"></div>
-            </div>
-            <small>GAZ / GERİ</small>
-        </div>
-    </div>
+<div id="info">DERİNDENİZBALIKÇISI</div>
+<button id="camera" onclick="changeCamera()">📷</button>
+<div id="steering"></div>
+<div id="throttle"><div id="lever"></div></div>
 </div>
-
-<script>
-function openPanel(id) {
-    document.getElementById("menu").style.display = "none";
-    document.getElementById(id).style.display = "flex";
-}
-
-function backMenu() {
-    document.querySelectorAll(".screen").forEach(el => {
-        el.style.display = "none";
-    });
-    document.getElementById("menu").style.display = "flex";
-}
-</script>
 
 <script type="module" src="./js/game.js"></script>
 </body>
