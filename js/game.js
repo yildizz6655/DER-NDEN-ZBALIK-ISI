@@ -5,303 +5,213 @@ let scene, camera, renderer, boat;
 let speed = 0;
 let throttle = 0;
 let steering = 0;
-let thirdPerson = true;
+let cameraMode = 0;
 let started = false;
-let animationStarted = false;
 
-const clock = new THREE.Clock();
+const menu = document.getElementById("menu");
+const hud = document.getElementById("hud");
+const wheel = document.getElementById("steering");
+const lever = document.getElementById("lever");
+
+window.startGame = function () {
+    if (started) return;
+
+    started = true;
+    menu.style.display = "none";
+    hud.style.display = "block";
+
+    init();
+    animate();
+};
+
+window.changeCamera = function () {
+    cameraMode = cameraMode === 0 ? 1 : 0;
+};
 
 function init() {
     scene = new THREE.Scene();
-    scene.background = new THREE.Color(0x83d5ff);
-    scene.fog = new THREE.Fog(0x83d5ff, 100, 450);
+    scene.background = new THREE.Color(0x75c9ed);
+    scene.fog = new THREE.Fog(0x75c9ed, 50, 350);
 
     camera = new THREE.PerspectiveCamera(
-        70, innerWidth / innerHeight, 0.1, 1000
+        70,
+        window.innerWidth / window.innerHeight,
+        0.1,
+        1000
     );
 
     renderer = new THREE.WebGLRenderer({ antialias: true });
-    renderer.setSize(innerWidth, innerHeight);
-    renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
-    renderer.outputColorSpace = THREE.SRGBColorSpace;
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    document.body.appendChild(renderer.domElement);
 
-    document.getElementById("game").appendChild(renderer.domElement);
-
-    scene.add(new THREE.HemisphereLight(0xbdeaff, 0x285b39, 2));
+    const light = new THREE.HemisphereLight(0xffffff, 0x31566b, 2);
+    scene.add(light);
 
     const sun = new THREE.DirectionalLight(0xffffff, 2);
-    sun.position.set(50, 100, 30);
+    sun.position.set(30, 50, 20);
     scene.add(sun);
 
     // DENİZ
-    const waterGeometry = new THREE.PlaneGeometry(1200, 1200, 100, 100);
-    const waterMaterial = new THREE.MeshStandardMaterial({
-        color: 0x087eae,
-        roughness: 0.25,
-        metalness: 0.25,
-        flatShading: true
-    });
+    const water = new THREE.Mesh(
+        new THREE.PlaneGeometry(1000, 1000, 100, 100),
+        new THREE.MeshStandardMaterial({
+            color: 0x087da9,
+            roughness: 0.35,
+            metalness: 0.25
+        })
+    );
 
-    const water = new THREE.Mesh(waterGeometry, waterMaterial);
     water.rotation.x = -Math.PI / 2;
-    water.position.y = -0.7;
+    water.position.y = -0.5;
     scene.add(water);
-
-    // ADALAR
-    createIsland(-65, -75, 23);
-    createIsland(85, -120, 30);
-    createIsland(120, 80, 27);
-    createIsland(-110, 115, 35);
 
     // TEKNE
     boat = new THREE.Group();
 
-    const hull = new THREE.Mesh(
-        new THREE.BoxGeometry(2.7, 0.8, 6),
-        new THREE.MeshStandardMaterial({ color: 0x172f45 })
-    );
-    boat.add(hull);
-
-    const deck = new THREE.Mesh(
-        new THREE.BoxGeometry(2.3, 0.3, 4),
-        new THREE.MeshStandardMaterial({ color: 0xf4f4f4 })
-    );
-    deck.position.y = 0.5;
-    boat.add(deck);
-
-    const seat = new THREE.Mesh(
-        new THREE.BoxGeometry(1.2, 0.9, 1),
-        new THREE.MeshStandardMaterial({ color: 0x293d50 })
-    );
-    seat.position.set(0, 1, 0.5);
-    boat.add(seat);
-
-    const windshield = new THREE.Mesh(
-        new THREE.BoxGeometry(1.8, 0.7, 0.1),
+    const body = new THREE.Mesh(
+        new THREE.BoxGeometry(3, 0.8, 7),
         new THREE.MeshStandardMaterial({
-            color: 0x66cfff,
-            transparent: true,
-            opacity: 0.7
+            color: 0xffffff,
+            roughness: 0.3
         })
     );
-    windshield.position.set(0, 1.3, -0.7);
-    boat.add(windshield);
+    body.position.y = 0.4;
+    boat.add(body);
+
+    const front = new THREE.Mesh(
+        new THREE.ConeGeometry(1.5, 2, 4),
+        new THREE.MeshStandardMaterial({ color: 0xffffff })
+    );
+    front.rotation.x = -Math.PI / 2;
+    front.position.set(0, 0.4, -4);
+    boat.add(front);
+
+    const cabin = new THREE.Mesh(
+        new THREE.BoxGeometry(2, 1.2, 2),
+        new THREE.MeshStandardMaterial({ color: 0x1684b4 })
+    );
+    cabin.position.set(0, 1.3, 0.5);
+    boat.add(cabin);
 
     scene.add(boat);
 
-    camera.position.set(0, 7, 12);
-    camera.lookAt(boat.position);
-
-    setupControls();
-    animationStarted = true;
-    animate();
-}
-
-// ADA OLUŞTURMA
-function createIsland(x, z, size) {
-    const island = new THREE.Group();
-
-    const sand = new THREE.Mesh(
-        new THREE.CylinderGeometry(size, size + 5, 3, 32),
-        new THREE.MeshStandardMaterial({ color: 0xcdbb79 })
-    );
-    sand.position.y = -1;
-    island.add(sand);
-
-    const grass = new THREE.Mesh(
-        new THREE.CylinderGeometry(size - 3, size, 3, 32),
-        new THREE.MeshStandardMaterial({ color: 0x32934d })
-    );
-    grass.position.y = 0.5;
-    island.add(grass);
-
-    for (let i = 0; i < 12; i++) {
-        const tree = new THREE.Group();
-
-        const trunk = new THREE.Mesh(
-            new THREE.CylinderGeometry(0.25, 0.4, 3),
-            new THREE.MeshStandardMaterial({ color: 0x704321 })
-        );
-        trunk.position.y = 1.5;
-        tree.add(trunk);
-
-        const leaves = new THREE.Mesh(
-            new THREE.ConeGeometry(2, 4, 8),
-            new THREE.MeshStandardMaterial({ color: 0x126b36 })
-        );
-        leaves.position.y = 4;
-        tree.add(leaves);
-
-        tree.position.set(
-            (Math.random() - 0.5) * size * 1.5,
-            1,
-            (Math.random() - 0.5) * size * 1.5
+    // UZAK ADALAR
+    for (let i = 0; i < 8; i++) {
+        const island = new THREE.Mesh(
+            new THREE.ConeGeometry(12 + Math.random() * 10, 18, 7),
+            new THREE.MeshStandardMaterial({ color: 0x397b45 })
         );
 
-        island.add(tree);
+        island.position.set(
+            Math.random() * 250 - 125,
+            5,
+            -70 - Math.random() * 250
+        );
+
+        scene.add(island);
     }
 
-    island.position.set(x, 0, z);
-    scene.add(island);
+    camera.position.set(0, 6, 12);
+
+    setupControls();
+
+    window.addEventListener("resize", () => {
+        camera.aspect = window.innerWidth / window.innerHeight;
+        camera.updateProjectionMatrix();
+        renderer.setSize(window.innerWidth, window.innerHeight);
+    });
 }
 
-// KONTROLLER
 function setupControls() {
-    const wheel = document.getElementById("steering-wheel");
-    const throttleArea = document.getElementById("throttle");
-    const handle = document.getElementById("throttle-handle");
-
     let wheelActive = false;
-    let leverActive = false;
+    let lastX = 0;
 
     wheel.addEventListener("pointerdown", e => {
         wheelActive = true;
+        lastX = e.clientX;
         wheel.setPointerCapture(e.pointerId);
-        moveWheel(e);
     });
 
     wheel.addEventListener("pointermove", e => {
-        if (wheelActive) moveWheel(e);
+        if (!wheelActive) return;
+
+        const difference = e.clientX - lastX;
+        steering = Math.max(-1, Math.min(1, difference / 35));
+        lastX = e.clientX;
+
+        wheel.style.transform = `rotate(${steering * 120}deg)`;
     });
 
-    function moveWheel(e) {
-        const rect = wheel.getBoundingClientRect();
-        const center = rect.left + rect.width / 2;
-
-        steering = THREE.MathUtils.clamp(
-            (e.clientX - center) / (rect.width * 0.42),
-            -1, 1
-        );
-
-        wheel.style.transform = `rotate(${steering * 135}deg)`;
-    }
-
-    function releaseWheel() {
+    wheel.addEventListener("pointerup", () => {
         wheelActive = false;
         steering = 0;
-        wheel.style.transform = "rotate(0deg)";
-    }
+    });
 
-    wheel.addEventListener("pointerup", releaseWheel);
-    wheel.addEventListener("pointercancel", releaseWheel);
+    let throttleActive = false;
 
-    throttleArea.addEventListener("pointerdown", e => {
-        leverActive = true;
-        throttleArea.setPointerCapture(e.pointerId);
+    lever.addEventListener("pointerdown", e => {
+        throttleActive = true;
+        lever.setPointerCapture(e.pointerId);
         moveLever(e);
     });
 
-    throttleArea.addEventListener("pointermove", e => {
-        if (leverActive) moveLever(e);
+    lever.addEventListener("pointermove", e => {
+        if (throttleActive) moveLever(e);
     });
 
     function moveLever(e) {
-        const rect = throttleArea.getBoundingClientRect();
+        const rect = document.getElementById("throttle").getBoundingClientRect();
+        const y = e.clientY - rect.top;
 
-        const y = THREE.MathUtils.clamp(
-            (e.clientY - rect.top - 20) / (rect.height - 40),
-            0, 1
-        );
+        const position = Math.max(5, Math.min(115, y - 12));
+        lever.style.top = position + "px";
 
-        throttle = 1 - y * 2;
-        handle.style.top = `${15 + y * 70}%`;
+        throttle = 1 - (position - 5) / 110 * 2;
     }
 
-    function releaseLever() {
-        leverActive = false;
+    function releaseThrottle() {
+        throttleActive = false;
         throttle = 0;
-        handle.style.top = "50%";
+        lever.style.top = "60px";
     }
 
-    throttleArea.addEventListener("pointerup", releaseLever);
-    throttleArea.addEventListener("pointercancel", releaseLever);
-
-    // KLAVYE
-    window.addEventListener("keydown", e => {
-        keys[e.key.toLowerCase()] = true;
-    });
-
-    window.addEventListener("keyup", e => {
-        keys[e.key.toLowerCase()] = false;
-    });
-
-    document.getElementById("camera").onclick = () => {
-        thirdPerson = !thirdPerson;
-    };
+    lever.addEventListener("pointerup", releaseThrottle);
+    lever.addEventListener("pointercancel", releaseThrottle);
 }
 
-const keys = {};
+function animate() {
+    requestAnimationFrame(animate);
 
-// OYUNU BAŞLAT
-window.startGame = function() {
-    if (!animationStarted) init();
+    const delta = 0.016;
 
-    started = true;
-    document.getElementById("menu").style.display = "none";
-    document.getElementById("hud").style.display = "block";
-};
+    speed += (throttle * 12 - speed) * 0.025;
 
-// OYUN GÜNCELLEME
-function update(delta) {
-    if (!started) return;
-
-    let power = throttle;
-    let turn = steering;
-
-    if (keys["w"] || keys["arrowup"]) power = 1;
-    if (keys["s"] || keys["arrowdown"]) power = -1;
-    if (keys["a"] || keys["arrowleft"]) turn = -1;
-    if (keys["d"] || keys["arrowright"]) turn = 1;
-
-    speed += power * 15 * delta;
-    speed *= Math.pow(0.985, delta * 60);
-    speed = THREE.MathUtils.clamp(speed, -12, 35);
-
-    boat.rotation.y += turn * speed * 0.035 * delta;
+    boat.rotation.y += steering * speed * 0.035;
 
     boat.position.x -= Math.sin(boat.rotation.y) * speed * delta;
     boat.position.z -= Math.cos(boat.rotation.y) * speed * delta;
 
-    boat.position.y = Math.sin(clock.elapsedTime * 2) * 0.12;
-
-    // KAMERA
-    const distance = thirdPerson ? 12 : 3;
-    const height = thirdPerson ? 7 : 2.5;
-
-    const target = new THREE.Vector3(
-        boat.position.x + Math.sin(boat.rotation.y) * distance,
-        boat.position.y + height,
-        boat.position.z + Math.cos(boat.rotation.y) * distance
-    );
-
-    camera.position.lerp(target, 0.07);
+    if (cameraMode === 0) {
+        camera.position.set(
+            boat.position.x + Math.sin(boat.rotation.y) * 12,
+            boat.position.y + 6,
+            boat.position.z + Math.cos(boat.rotation.y) * 12
+        );
+    } else {
+        camera.position.set(
+            boat.position.x,
+            boat.position.y + 2.5,
+            boat.position.z - 1
+        );
+    }
 
     camera.lookAt(
         boat.position.x,
-        boat.position.y + 0.5,
+        boat.position.y,
         boat.position.z
     );
 
-    document.getElementById("speed").textContent =
-        Math.abs(Math.round(speed)) + " KM/H";
-}
-
-// ANA DÖNGÜ
-function animate() {
-    requestAnimationFrame(animate);
-
-    const delta = Math.min(clock.getDelta(), 0.05);
-
-    update(delta);
     renderer.render(scene, camera);
-}
-
-// EKRAN BOYUTU
-window.addEventListener("resize", () => {
-    if (!camera || !renderer) return;
-
-    camera.aspect = innerWidth / innerHeight;
-    camera.updateProjectionMatrix();
-    renderer.setSize(innerWidth, innerHeight);
-});
-        
+        }
+            
