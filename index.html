@@ -2,136 +2,305 @@
 <!DOCTYPE html>
 <html lang="tr">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
-<title>DERİNDENİZBALIKÇISI</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="theme-color" content="#061d30">
 
-<style>
-*{box-sizing:border-box}
-html,body{
- margin:0;width:100%;height:100%;overflow:hidden;
- background:#031b2c;color:white;font-family:Arial;
- touch-action:none;user-select:none;
-}
-canvas.game3d{
- position:fixed;inset:0;width:100%;height:100%;z-index:0;
-}
-#menu{
- position:fixed;inset:0;z-index:10;
- display:flex;flex-direction:column;align-items:center;
- justify-content:center;text-align:center;
- background:linear-gradient(160deg,#087eae,#03213d 75%);
-}
-#menu h1{font-size:clamp(24px,5vw,42px);color:#7deaff}
-#menu p{color:#d0f5ff}
-.menu-btn{
- width:min(270px,80vw);padding:14px;margin:6px;
- border:1px solid #73e5ff;border-radius:13px;
- color:white;background:linear-gradient(120deg,#078bb8,#07527e);
- font-size:16px;font-weight:bold;
-}
-#hud{display:none;position:fixed;inset:0;z-index:5;pointer-events:none}
-#status{
- position:absolute;top:12px;left:50%;transform:translateX(-50%);
- padding:8px 15px;border-radius:20px;
- background:#001d35bb;font-size:13px;white-space:nowrap;
-}
-#camera{
- position:absolute;right:max(14px,env(safe-area-inset-right));
- top:max(14px,env(safe-area-inset-top));
- width:52px;height:52px;border-radius:50%;
- border:2px solid #b8f4ff;background:#075b85;color:white;
- font-size:24px;pointer-events:auto;
-}
-#minimap{
- position:absolute;left:max(12px,env(safe-area-inset-left));
- top:max(12px,env(safe-area-inset-top));
- width:clamp(95px,18vw,145px);
- aspect-ratio:1;border-radius:50%;
- border:3px solid #a8efff;background:#052b40;
- box-shadow:0 0 12px #00bfff88;
-}
-#mapCanvas{width:100%;height:100%;display:block;border-radius:50%}
-#speedBox{
- position:absolute;left:50%;bottom:12px;transform:translateX(-50%);
- background:#001d35cc;border:1px solid #6ce5ff;
- padding:7px 15px;border-radius:20px;font-size:13px;
-}
-#steering{
- position:absolute;left:max(20px,env(safe-area-inset-left));
- bottom:max(18px,env(safe-area-inset-bottom));
- width:clamp(105px,19vw,145px);
- aspect-ratio:1;border:10px solid #d9f8ff;
- border-radius:50%;background:#073c59aa;
- box-shadow:0 0 10px #00cfff99;
- pointer-events:auto;touch-action:none;
-}
-#steering:before,#steering:after{
- content:"";position:absolute;background:#d9f8ff;
- left:8%;right:8%;top:calc(50% - 4px);height:8px;
- border-radius:5px;
-}
-#steering:after{transform:rotate(90deg)}
-#wheelCenter{
- position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);
- width:23px;height:23px;border-radius:50%;background:#d9f8ff;
-}
-#throttle{
- position:absolute;right:max(22px,env(safe-area-inset-right));
- bottom:max(18px,env(safe-area-inset-bottom));
- height:clamp(125px,26vh,180px);width:65px;
- border-radius:30px;background:#062c46dd;
- border:3px solid #c4f3ff;pointer-events:auto;
- touch-action:none;
-}
-#throttle:before{
- content:"▲";position:absolute;top:5px;left:22px;color:#70eaff;
- font-size:15px;
-}
-#throttle:after{
- content:"▼";position:absolute;bottom:5px;left:22px;color:#70eaff;
- font-size:15px;
-}
-#lever{
- position:absolute;left:5px;top:50%;
- transform:translateY(-50%);
- width:49px;height:35px;border-radius:20px;
- background:linear-gradient(135deg,#8df2ff,#078cbd);
- border:2px solid white;box-shadow:0 2px 8px #0008;
-}
-#rotateNotice{
- display:none;position:fixed;inset:0;z-index:30;
- background:#031b2c;color:white;
- align-items:center;justify-content:center;
- text-align:center;font-size:20px;padding:25px;
-}
-@media (orientation:portrait){
- #rotateNotice{display:flex}
-}
-</style>
+    <title>DERİNDENİZBALIKÇISI</title>
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+            user-select: none;
+        }
+
+        html, body {
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            background: #061d30;
+            font-family: Arial, sans-serif;
+            touch-action: none;
+        }
+
+        .game3d {
+            position: fixed;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+        }
+
+        /* ANA MENÜ */
+        #menu {
+            position: fixed;
+            inset: 0;
+            z-index: 20;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            color: white;
+            text-align: center;
+            background:
+                linear-gradient(#001d30aa, #001020ee),
+                linear-gradient(135deg, #087ca8, #021827);
+        }
+
+        #menu h1 {
+            font-size: clamp(28px, 6vw, 55px);
+            letter-spacing: 3px;
+            margin-bottom: 12px;
+            text-shadow: 0 4px 15px #000;
+        }
+
+        #menu p {
+            color: #b8eaff;
+            margin-bottom: 30px;
+            font-size: 15px;
+        }
+
+        #menu button {
+            padding: 17px 55px;
+            border: 2px solid white;
+            border-radius: 12px;
+            background: #0788bd;
+            color: white;
+            font-size: 20px;
+            font-weight: bold;
+            box-shadow: 0 5px 20px #0008;
+        }
+
+        /* OYUN ARAYÜZÜ */
+        #hud {
+            display: none;
+            position: fixed;
+            inset: 0;
+            z-index: 10;
+            pointer-events: none;
+        }
+
+        /* MİNİ HARİTA */
+        #minimap {
+            position: absolute;
+            top: 14px;
+            left: 14px;
+            width: 125px;
+            height: 125px;
+            border: 3px solid white;
+            border-radius: 50%;
+            overflow: hidden;
+            background: #07516d;
+            box-shadow: 0 3px 12px #0009;
+        }
+
+        #mapCanvas {
+            width: 100%;
+            height: 100%;
+        }
+
+        /* KAMERA */
+        #camera {
+            position: absolute;
+            top: 16px;
+            right: 16px;
+            width: 55px;
+            height: 55px;
+            border: 2px solid white;
+            border-radius: 15px;
+            background: #071d30dd;
+            color: white;
+            font-size: 26px;
+            pointer-events: auto;
+        }
+
+        /* HIZ GÖSTERGESİ */
+        #speedBox {
+            position: absolute;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            color: white;
+            background: #001b2ccc;
+            border: 1px solid #ffffff88;
+            border-radius: 12px;
+            padding: 10px 18px;
+            font-size: 17px;
+            font-weight: bold;
+        }
+
+        /* DİREKSİYON */
+        #steering {
+            position: absolute;
+            bottom: 22px;
+            left: 25px;
+            width: 125px;
+            height: 125px;
+            border: 10px solid #222;
+            border-radius: 50%;
+            background:
+                radial-gradient(circle, #555 0 18%, #111 20% 30%, #444 32% 100%);
+            box-shadow: 0 5px 15px #000a;
+            pointer-events: auto;
+            touch-action: none;
+        }
+
+        #steering::before,
+        #steering::after {
+            content: "";
+            position: absolute;
+            background: #ddd;
+            border-radius: 5px;
+        }
+
+        #steering::before {
+            width: 75%;
+            height: 9px;
+            top: 50%;
+            left: 12.5%;
+            transform: translateY(-50%);
+        }
+
+        #steering::after {
+            width: 9px;
+            height: 75%;
+            left: 50%;
+            top: 12.5%;
+            transform: translateX(-50%);
+        }
+
+        /* GAZ KOLU */
+        #throttle {
+            position: absolute;
+            right: 25px;
+            bottom: 20px;
+            width: 75px;
+            height: 175px;
+            border: 4px solid #aaa;
+            border-radius: 20px;
+            background: #101b28dd;
+            pointer-events: auto;
+            touch-action: none;
+        }
+
+        #throttle::before {
+            content: "GAZ";
+            position: absolute;
+            top: 8px;
+            width: 100%;
+            text-align: center;
+            color: #53e9a4;
+            font-size: 11px;
+            font-weight: bold;
+        }
+
+        #throttle::after {
+            content: "GERİ";
+            position: absolute;
+            bottom: 8px;
+            width: 100%;
+            text-align: center;
+            color: #ff7777;
+            font-size: 11px;
+            font-weight: bold;
+        }
+
+        #lever {
+            position: absolute;
+            top: 50%;
+            left: 8px;
+            width: 50px;
+            height: 42px;
+            transform: translateY(-50%);
+            border-radius: 12px;
+            border: 2px solid white;
+            background: linear-gradient(#55caff, #0875a7);
+            box-shadow: 0 3px 8px #0009;
+        }
+
+        /* DİKEY EKRAN UYARISI */
+        #rotateNotice {
+            display: none;
+            position: fixed;
+            inset: 0;
+            z-index: 100;
+            background: #061d30;
+            color: white;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            font-size: 22px;
+            padding: 25px;
+        }
+
+        @media (orientation: portrait) {
+            #rotateNotice {
+                display: flex;
+            }
+        }
+
+        @media (max-height: 450px) {
+            #steering {
+                width: 105px;
+                height: 105px;
+                bottom: 12px;
+            }
+
+            #throttle {
+                height: 145px;
+                bottom: 10px;
+            }
+
+            #minimap {
+                width: 95px;
+                height: 95px;
+            }
+        }
+    </style>
 </head>
 
 <body>
-<div id="menu">
- <h1>🎣 DERİNDENİZBALIKÇISI</h1>
- <p>Denizin derinliklerinde macera başlıyor!</p>
- <button class="menu-btn" onclick="startGame()">▶ OYUNA BAŞLA</button>
- <button class="menu-btn">🚤 TEKNE GARAJI</button>
- <button class="menu-btn">🐟 BALIK KOLEKSİYONU</button>
- <button class="menu-btn">⚙ AYARLAR</button>
-</div>
 
-<div id="hud">
- <div id="minimap"><canvas id="mapCanvas" width="220" height="220"></canvas></div>
- <div id="status">🎣 DERİNDENİZBALIKÇISI</div>
- <button id="camera" onclick="changeCamera()">📷</button>
- <div id="steering"><div id="wheelCenter"></div></div>
- <div id="throttle"><div id="lever"></div></div>
- <div id="speedBox">0 KM/H</div>
-</div>
+    <!-- ANA MENÜ -->
+    <div id="menu">
+        <h1>DERİNDENİZBALIKÇISI</h1>
+        <p>3D Balıkçılık Macerası</p>
+        <button onclick="startGame()">OYUNA BAŞLA</button>
+    </div>
 
-<div id="rotateNotice">📱 Oyunu oynamak için telefonunu yatay çevir!</div>
+    <!-- OYUN ARAYÜZÜ -->
+    <div id="hud">
 
-<script type="module" src="./js/game.js"></script>
+        <div id="minimap">
+            <canvas id="mapCanvas"
+                width="250"
+                height="250"></canvas>
+        </div>
+
+        <div id="speedBox">0 KM/H</div>
+
+        <button id="camera"
+            onclick="changeCamera()">📷</button>
+
+        <div id="steering"></div>
+
+        <div id="throttle">
+            <div id="lever"></div>
+        </div>
+
+    </div>
+
+    <!-- TELEFONU YATAY ÇEVİR -->
+    <div id="rotateNotice">
+        📱<br><br>
+        Lütfen telefonunu yatay çevir!
+    </div>
+
+    <!-- OYUN JAVASCRIPT -->
+    <script type="module" src="./js/game.js"></script>
+
 </body>
 </html>
