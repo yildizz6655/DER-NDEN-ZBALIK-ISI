@@ -4,239 +4,85 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Fishing World</title>
-
-<style>
-* {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-}
-
-body {
-    font-family: Arial, sans-serif;
-    background: #061c32;
-    color: white;
-    overflow: hidden;
-}
-
-#game {
-    position: fixed;
-    inset: 0;
-}
-
-canvas {
-    display: block;
-    width: 100%;
-    height: 100%;
-}
-
-#menu {
-    position: fixed;
-    inset: 0;
-    z-index: 5;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    padding: 25px;
-    background: linear-gradient(180deg, #063b61dd, #031323f5);
-}
-
-.logo {
-    font-size: 42px;
-    font-weight: 900;
-    letter-spacing: 3px;
-    color: #53d5ff;
-    text-shadow: 0 0 20px #00aaff;
-    text-align: center;
-}
-
-.subtitle {
-    color: #c5eaff;
-    margin: 12px 0 35px;
-}
-
-.menu-button {
-    width: 260px;
-    padding: 16px;
-    margin: 7px;
-    border: 1px solid #48c9ff;
-    border-radius: 12px;
-    background: linear-gradient(90deg, #0876ae, #06466e);
-    color: white;
-    font-size: 16px;
-    font-weight: bold;
-    cursor: pointer;
-}
-
-.menu-button:active {
-    transform: scale(.96);
-}
-
-#status {
-    margin-top: 25px;
-    color: #a7dfff;
-    text-align: center;
-}
-
-#hud {
-    display: none;
-    position: fixed;
-    inset: 0;
-    z-index: 2;
-    pointer-events: none;
-}
-
-.panel {
-    position: absolute;
-    top: 15px;
-    left: 15px;
-    padding: 12px 18px;
-    background: #001c32bb;
-    border: 1px solid #55cfff;
-    border-radius: 12px;
-}
-
-#message {
-    position: absolute;
-    top: 90px;
-    left: 50%;
-    transform: translateX(-50%);
-    background: #001c32bb;
-    padding: 10px 18px;
-    border-radius: 12px;
-}
-
-#controls {
-    position: absolute;
-    bottom: 25px;
-    left: 0;
-    right: 0;
-    display: flex;
-    justify-content: space-between;
-    padding: 0 20px;
-}
-
-.control {
-    width: 65px;
-    height: 65px;
-    border-radius: 50%;
-    border: 2px solid white;
-    background: #0876aacc;
-    color: white;
-    font-size: 25px;
-    pointer-events: auto;
-    touch-action: none;
-}
-
-#camera {
-    font-size: 13px;
-    width: 75px;
-    height: 45px;
-    border-radius: 12px;
-}
-
-#garage, #collection, #settings {
-    display: none;
-    position: fixed;
-    z-index: 8;
-    inset: 0;
-    background: #031a2cf5;
-    align-items: center;
-    justify-content: center;
-    flex-direction: column;
-    gap: 18px;
-}
-
-.back {
-    padding: 13px 35px;
-    border: 0;
-    border-radius: 10px;
-    background: #0876ae;
-    color: white;
-    font-weight: bold;
-}
-</style>
+<title>DERİNDENİZBALIKÇISI</title>
+<link rel="stylesheet" href="style.css">
 </head>
-
 <body>
 
 <div id="game"></div>
 
 <div id="menu">
-    <div class="logo">FISHING WORLD</div>
-    <div class="subtitle">Büyük balıkçılık macerası seni bekliyor!</div>
+    <h1>🎣 DERİNDENİZBALIKÇISI</h1>
+    <p>Denizin derinliklerinde macera başlıyor!</p>
 
-    <button class="menu-button" onclick="startGame()">
-        ▶ OYUNA BAŞLA
-    </button>
+    <button onclick="startGame()">▶ OYUNA BAŞLA</button>
+    <button onclick="openPanel('garage')">🚤 TEKNE GARAJI</button>
+    <button onclick="openPanel('collection')">🐟 BALIK KOLEKSİYONU</button>
+    <button onclick="openPanel('settings')">⚙ AYARLAR</button>
 
-    <button class="menu-button" onclick="openPanel('garage')">
-        🚤 TEKNE GARAJI
-    </button>
-
-    <button class="menu-button" onclick="openPanel('collection')">
-        🐠 KOLEKSİYON
-    </button>
-
-    <button class="menu-button" onclick="openPanel('settings')">
-        ⚙ AYARLAR
-    </button>
-
-    <div id="status">💰 Başlangıç parası: 1.000 TL</div>
+    <div>💰 <span id="menu-money">1.000</span> TL</div>
 </div>
 
-<div id="garage">
+<div id="garage" class="screen">
     <h1>🚤 TEKNE GARAJI</h1>
     <p>Başlangıç teknen seni bekliyor!</p>
-    <button class="back" onclick="backMenu()">GERİ</button>
+    <button onclick="backMenu()">GERİ</button>
 </div>
 
-<div id="collection">
-    <h1>🐠 BALIK KOLEKSİYONU</h1>
-    <p>Yakaladığın balıklar burada görünecek.</p>
-    <button class="back" onclick="backMenu()">GERİ</button>
+<div id="collection" class="screen">
+    <h1>🐟 BALIK KOLEKSİYONU</h1>
+    <p>Henüz balık yakalamadın.</p>
+    <button onclick="backMenu()">GERİ</button>
 </div>
 
-<div id="settings">
+<div id="settings" class="screen">
     <h1>⚙ AYARLAR</h1>
-    <p>Fishing World ayarları</p>
-    <button class="back" onclick="backMenu()">GERİ</button>
+    <p>Oyun sürümü: 1.0</p>
+    <button onclick="backMenu()">GERİ</button>
 </div>
 
 <div id="hud">
-    <div class="panel">
-        🎣 FISHING WORLD<br>
-        💰 <span id="money">1.000</span> TL
+    <div class="top-info">
+        <b>🎣 DERİNDENİZBALIKÇISI</b>
+        <span>💰 1.000 TL</span>
+        <span id="speed">0 KM/H</span>
     </div>
 
-    <div id="message">🚤 Denizde özgürce dolaş!</div>
+    <button id="camera">📷 KAMERA</button>
 
     <div id="controls">
-        <button class="control" id="left">◀</button>
-        <button class="control" id="forward">▲</button>
-        <button class="control" id="right">▶</button>
-        <button class="control" id="camera">📷 KAMERA</button>
+        <div class="steering-area">
+            <div id="steering-wheel">
+                <div class="wheel-center">✥</div>
+            </div>
+            <small>DİREKSİYON</small>
+        </div>
+
+        <div class="throttle-area">
+            <div id="throttle">
+                <div class="lever-label top">İLERİ</div>
+                <div class="lever-label bottom">GERİ</div>
+                <div id="throttle-handle"></div>
+            </div>
+            <small>GAZ / GERİ</small>
+        </div>
     </div>
 </div>
 
 <script>
-function openPanel(name) {
+function openPanel(id) {
     document.getElementById("menu").style.display = "none";
-    document.getElementById(name).style.display = "flex";
+    document.getElementById(id).style.display = "flex";
 }
 
 function backMenu() {
-    document.querySelectorAll("#garage, #collection, #settings")
-        .forEach(panel => panel.style.display = "none");
-
+    document.querySelectorAll(".screen").forEach(el => {
+        el.style.display = "none";
+    });
     document.getElementById("menu").style.display = "flex";
 }
 </script>
 
 <script type="module" src="./js/game.js"></script>
-
 </body>
-  </html>
-  
+</html>
